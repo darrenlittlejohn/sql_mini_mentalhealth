@@ -1,5 +1,16 @@
 # SQL_mini_project_unmet_mental_health_needs_as_predictor_of_exit_from_work
 
+## Concept Development Notes
+My thinking on this project is to first locate data focused on mental health, addiction, and labor—data that could lead to insights about productivity. The goal is to help stakeholders understand whether there are differences across industries or communities in addiction and treatment patterns.
+
+The project aligns with existing research showing that **mental health significantly impacts workforce outcomes.**
+
+This is the starting point of the thinking process. AI generated about a dozen hypotheses around mental health and employment, seeking business questions that remain unanswered. The most relevant question, based on both available data and personal interest, is this one—**unmet mental health need as a predictor of exit from work.**
+
+My background in healthcare and research psychology (graduate and undergraduate) includes training in statistics, research design, and data interpretation. That academic base has supported research for bestselling books on addiction, as well as podcasts, blogs, and related media. This project continues that applied research tradition.
+
+The goal is to identify something personally meaningful and professionally relevant: to examine employer awareness of mental health and addiction, what programs exist, what is being done, and what has been shown to
+
 ## Executive Problem Statement (Ask)
 Do adults who report unmet need for mental health care show higher rates of being unemployed or out of the labor force?
 
@@ -75,13 +86,3 @@ AI-assisted dataset exploration identified viable federal sources. Some SAMHSA d
 
 ---
 
-## Concept Development Notes
-My thinking on this project is to first locate data focused on mental health, addiction, and labor—data that could lead to insights about productivity. The goal is to help stakeholders understand whether there are differences across industries or communities in addiction and treatment patterns.
-
-The project aligns with existing research showing that **mental health significantly impacts workforce outcomes.**
-
-This is the starting point of the thinking process. AI generated about a dozen hypotheses around mental health and employment, seeking business questions that remain unanswered. The most relevant question, based on both available data and personal interest, is this one—**unmet mental health need as a predictor of exit from work.**
-
-My background in healthcare and research psychology (graduate and undergraduate) includes training in statistics, research design, and data interpretation. That academic base has supported research for bestselling books on addiction, as well as podcasts, blogs, and related media. This project continues that applied research tradition.
-
-The goal is to identify something personally meaningful and professionally relevant: to examine employer awareness of mental health and addiction, what programs exist, what is being done, and what has been shown to
