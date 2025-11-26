@@ -527,7 +527,7 @@ replicate weights for variance estimation
 
 Weighting does not mix variables together or combine constructs.
 
-✔ Summary (clean)
+✔ Summary
 
 Unmet need is a mental-health outcome.
 Workplace access is an environmental exposure.
@@ -538,8 +538,8 @@ For this reason, workplace access is not already included in unmet need, even in
 **the largest cell in the entire dataset will always be:
 
 Employed full-time + Yes unmet need
-
 not because unmet need causes employment,
 but because that’s where the population is.
 
 It’s simply the biggest segment of the dataset.
+
