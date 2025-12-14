@@ -3,42 +3,62 @@
 
 **Mini SQL Project | Data Sources: NSDUH (2019–2023) and TEDS-A (2019–2022)**
 
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-CC2927?style=for-the-badge&logo=cplusplus&logoColor=white)
+![Tableau](https://img.shields.io/badge/Tableau-E97627?style=for-the-badge&logo=tableau&logoColor=white)
+![ETL](https://img.shields.io/badge/ETL-Pipeline-blue?style=for-the-badge)
+![Data Analysis](https://img.shields.io/badge/Data_Analysis-Hypothesis_Testing-green?style=for-the-badge)
+
+---
+
+## Executive Summary
+
+> **Key Insight:** Analysis of NSDUH data reveals a statistically significant correlation between unmet mental health needs and workforce detachment. Identifying and treating these unmet needs presents a measurable opportunity for improving workforce retention and economic productivity.
+
+**TL;DR:**
+*   **Goal:** Determine if untreated mental health issues predict unemployment.
+*   **Data:** 5 years of National Survey on Drug Use and Health (NSDUH) data (n > 200,000).
+*   **Method:** SQL-based ETL pipeline, statistical hypothesis testing (Chi-Square), and Tableau visualization.
+*   **Result:** **Significant Association.** Adults with unmet needs are disproportionately unemployed or out of the labor force, even when controlling for education.
+
 ---
 
 ## Table of Contents
 
-1.  [Project Overview](#project-overview)
+1.  [Executive Summary](#executive-summary)
+2.  [Project Overview](#project-overview)
     *   [Rationale](#rationale)
     *   [Summary](#summary)
-    *   [Why It Matters](#why-it-matters)
-2.  [Hypotheses](#hypotheses)
+    *   [Business Impact & Policy Implications](#business-impact--policy-implications)
+3.  [Hypotheses](#hypotheses)
     *   [Primary Hypothesis (NSDUH)](#primary-hypothesis-nsduh)
     *   [Secondary Hypothesis (TEDS-A)](#secondary-hypothesis-teds-a)
     *   [Integrated Cross-Dataset Hypothesis](#integrated-cross-dataset-hypothesis)
     *   [Formal Hypothesis](#formal-hypothesis)
-3.  [Data Source: The NSDUH Study](#data-source-the-nsduh-study)
+4.  [Data Source: The NSDUH Study](#data-source-the-nsduh-study)
     *   [The Gold Standard](#the-gold-standard-for-behavioral-health-data)
     *   [Navigating Signal vs. Noise](#navigating-signal-vs-noise)
     *   [Extraction Strategy](#extraction-strategy)
     *   [Defining "Unmet Need"](#defining-unmet-need)
-4.  [Methodology & Phases](#methodology--phases)
+5.  [Methodology & Phases](#methodology--phases)
     *   [Project Structure](#project-structure)
     *   [Phase 1 – NSDUH 2019](#phase-1--nsduh-2019-current-stage)
     *   [Phase 2 – Multi-Year NSDUH Integration](#phase-2--multi-year-nsduh-integration-20202023)
     *   [Phase 3 – TEDS Integration](#phase-3--teds-integration-future-phase)
-5.  [ETL & Data Engineering](#etl--data-engineering)
+6.  [ETL & Data Engineering](#etl--data-engineering)
     *   [ETL Documentation](#etl-documentation)
     *   [Data Refinement and Table Standardization](#data-refinement-and-table-standardization-20192023)
     *   [Variable Recoding & Renaming](#phase-1--nsduh-2019-current-stage)
     *   [Data Type Enforcement](#data-type-enforcement)
     *   [Import Verification](#import-verification)
-6.  [Analysis & Findings](#analysis--findings)
+    *   [Technical Highlights](#technical-highlights)
+7.  [Analysis & Findings](#analysis--findings)
     *   [Key Findings 2019](#key-findings-2019_nsduh)
     *   [Exploratory Data Analysis](#exploratory-data-analysis)
     *   [Demographics](#demographics)
     *   [Employment Status](#employment-status)
     *   [Interpretation of Preliminary Findings](#interpretation-of-preliminary-findings)
-7.  [Discussion & Recommendations](#discussion--recommendations)
+8.  [Discussion & Recommendations](#discussion--recommendations)
     *   [Recommendations for Further Action](#recommendations-for-further-action-and-study)
     *   [Note on Unmet Need vs Workplace Access](#note-why-access-at-work-is-not-included-in-unmet-need)
 
@@ -62,17 +82,17 @@ This SQL-based mini study combines NSDUH population survey data with TEDS-A trea
 
 *Draft Note (Variant):* This SQL-based mini study ultimately (Phase 3) combines NSDUH population survey data with TEDS-A treatment admissions data to explore how unmet or untreated mental health needs relate to workforce detachment. The analysis demonstrates ETL workflow clarity, SQL analytic structure, and workforce policy relevance through hypothesis-driven modeling across multiple federal datasets.
 
-### Why It Matters
+### Business Impact & Policy Implications
+
+**TL;DR: Mental health is an economic engine.**
+*   **Workforce Retention:** Untreated mental health issues are a "silent leak" in the labor force.
+*   **ROI of Care:** Data suggests that barriers to access (cost, stigma) have direct economic consequences.
+*   **Strategic Policy:** Employers establishing Assistance Programs (EAPs) could see measurable ROI in retention.
 
 -   Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across *systems, verticals and industries*
 -   Quantifying this link supports business HR and social economic policy, treatment funding, and workforce retention strategies
 -   Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics and further study.
 -   There are many questions left to explore, validate or invalidate in this repo. Please contribute your own branch of analysis!
-
-*(Original Version)*:
--   Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across systems
--   Quantifying this link supports economic policy, treatment funding, and workforce retention strategies
--   Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics
 
 ---
 
@@ -353,6 +373,33 @@ WHERE table_schema='public'
 AND table_name IN ('nsduh_2019', 'nsduh_2020', 'nsduh_2021', 'nsduh_2022', 'nsduh_2023', 'teds_a_2019', 'teds_a_2020', 'teds_a_2021', 'teds_a_2022', 'teds_a_2023')
 ORDER BY table_name, ordinal_position;
 ```
+
+---
+
+## Technical Highlights
+
+**TL;DR:** This project demonstrates advanced SQL capabilities including complex data harmonizing, derived variable construction, and cross-year schema mapping.
+
+### 1. Complex Logic for "Unmet Need"
+The `unmet_need` variable isn't a simple column; it required harmonizing logic across years where definitions shifted.
+
+```sql
+-- Derived Variable Construction
+CASE
+    -- Scenario A: No treatment, but sought shelter/specialized therapy -> Unmet Need
+    WHEN mhtrtpy = 0 AND (mhtshldtx = 1 OR mhtskthpy = 1) THEN 1
+    
+    -- Scenario B: No treatment, no access attempts -> No Unmet Need
+    WHEN mhtrtpy = 0 
+         AND COALESCE(mhtshldtx, 2) IN (0, 2) 
+         AND COALESCE(mhtskthpy, 2) IN (0, 2) THEN 0
+         
+    ELSE NULL
+END AS unmet_need_revised
+```
+
+### 2. Schema Drift Handling
+Managed schema evolution across 5 years of federal data releases (2019-2023), mapping changing column names (e.g., `AGE2` vs `CATAGE`) and data types to a unified PostgreSQL schema.
 
 ---
 
