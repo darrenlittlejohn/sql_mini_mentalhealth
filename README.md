@@ -1,11 +1,11 @@
 # sql_mini_mentalhealth
 # Unmet Mental Health Need and Employment Outcomes
 
-**Mini SQL Project | Data Sources: NSDUH (2019–2023) and TEDS-A (2019–2022)**
+**Mini SQL Project | Data Sources: NSDUH (2019–2023)**
 
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![SQL](https://img.shields.io/badge/SQL-CC2927?style=for-the-badge&logo=cplusplus&logoColor=white)
-![Tableau](https://img.shields.io/badge/Tableau-E97627?style=for-the-badge&logo=tableau&logoColor=white)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![SQL](https://img.shields.io/badge/SQL-CC2927?style=for-the-badge&logo=cplusplus&logoColor=white)](https://en.wikipedia.org/wiki/SQL)
+[![Tableau](https://img.shields.io/badge/Tableau-E97627?style=for-the-badge&logo=tableau&logoColor=white)](https://www.tableau.com/)
 ![ETL](https://img.shields.io/badge/ETL-Pipeline-blue?style=for-the-badge)
 ![Data Analysis](https://img.shields.io/badge/Data_Analysis-Hypothesis_Testing-green?style=for-the-badge)
 
@@ -61,6 +61,9 @@
 8.  [Discussion & Recommendations](#discussion--recommendations)
     *   [Recommendations for Further Action](#recommendations-for-further-action-and-study)
     *   [Note on Unmet Need vs Workplace Access](#note-why-access-at-work-is-not-included-in-unmet-need)
+9. [Future Roadmap: Phase 3 (TEDS-A)](#future-roadmap-phase-3-teds-a)
+    *   [Secondary Hypothesis](#secondary-hypothesis-teds-a)
+    *   [Integrated Analysis](#integrated-cross-dataset-hypothesis)
 
 ---
 
@@ -115,21 +118,6 @@ Adults who report an unmet need for mental health treatment are more likely to b
 
 *Primary Hypothesis (NSDUH only):* Unmet need Access, or unmet need for mental health services predicts employment status. We ask if lack of access to mental health care affects one’s ability to maintain employment, and what groups show the highest unmet need.
 
-### Secondary Hypothesis (TEDS-A)
-
-Among treatment admissions, clients with a reported mental health problem have higher odds of being unemployed or not in the labor force at admission than clients without a reported mental health problem.
-
-**Operationalization (TEDS-A 2019–2022):**
-
--   **Exposure:** `PSYPROB = 1` (co-occurring mental health problem)
--   **Outcome:** `EMPLOY ∈ {Unemployed, Not in labor force}`
--   **Covariates:** `AGE` (categorical), `SEX`, `RACE/ETHNIC`, `EDUC`, state (`STFIPS`), year
--   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `PSYPROB=1` vs `0`
-
-### Integrated Cross-Dataset Hypothesis
-
-Signals of unmet or untreated mental health need (`NSDUH AMHTXND2=1`) at the population level correspond with higher unemployment/OLF at point-of-treatment (`TEDS-A PSYPROB=1`), i.e., counties/years with higher NSDUH unmet-need prevalence will show higher shares of unemployed/OLF status among TEDS-A admissions, after adjusting for demographics and year.
-
 ---
 
 ## Data Source: The NSDUH Study
@@ -180,10 +168,6 @@ After 2019 is complete, identical transformations will be applied to the 2020–
 -   Missing/unavailable variables
 -   Unmet-need measurement shifting to three mental-health service variables (2022–2023)
 -   Those differences are *not* handled here; they are handled in Phase 2.
-
-#### Phase 3 – TEDS Integration (Future Phase)
-
-(See Secondary and Integrated Hypotheses details above).
 
 ---
 
@@ -537,3 +521,20 @@ Because NSDUH does not tie unmet need to employer benefits in its scoring or wei
 Unmet need is a mental-health outcome. Workplace access is an environmental exposure. They are not combined, not weighted together, and never influence each other inside NSDUH’s scoring. For this reason, workplace access is not already included in unmet need, even in weighted form.
 
 ---
+
+## Future Roadmap: Phase 3 (TEDS-A)
+
+### Secondary Hypothesis (TEDS-A)
+
+Among treatment admissions, clients with a reported mental health problem have higher odds of being unemployed or not in the labor force at admission than clients without a reported mental health problem.
+
+**Operationalization (TEDS-A 2019–2022):**
+
+-   **Exposure:** `PSYPROB = 1` (co-occurring mental health problem)
+-   **Outcome:** `EMPLOY ∈ {Unemployed, Not in labor force}`
+-   **Covariates:** `AGE` (categorical), `SEX`, `RACE/ETHNIC`, `EDUC`, state (`STFIPS`), year
+-   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `PSYPROB=1` vs `0`
+
+### Integrated Cross-Dataset Hypothesis
+
+Signals of unmet or untreated mental health need (`NSDUH AMHTXND2=1`) at the population level correspond with higher unemployment/OLF at point-of-treatment (`TEDS-A PSYPROB=1`), i.e., counties/years with higher NSDUH unmet-need prevalence will show higher shares of unemployed/OLF status among TEDS-A admissions, after adjusting for demographics and year.
