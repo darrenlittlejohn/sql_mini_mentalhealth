@@ -1,10 +1,82 @@
 # sql_mini_mentalhealth
-
 # Unmet Mental Health Need and Employment Outcomes
 
 **Mini SQL Project | Data Sources: NSDUH (2019–2023) and TEDS-A (2019–2022)**
 
-## Hypothesis
+---
+
+## Table of Contents
+
+1.  [Project Overview](#project-overview)
+    *   [Rationale](#rationale)
+    *   [Summary](#summary)
+    *   [Why It Matters](#why-it-matters)
+2.  [Hypotheses](#hypotheses)
+    *   [Primary Hypothesis (NSDUH)](#primary-hypothesis-nsduh)
+    *   [Secondary Hypothesis (TEDS-A)](#secondary-hypothesis-teds-a)
+    *   [Integrated Cross-Dataset Hypothesis](#integrated-cross-dataset-hypothesis)
+    *   [Formal Hypothesis](#formal-hypothesis)
+3.  [Data Source: The NSDUH Study](#data-source-the-nsduh-study)
+    *   [The Gold Standard](#the-gold-standard-for-behavioral-health-data)
+    *   [Navigating Signal vs. Noise](#navigating-signal-vs-noise)
+    *   [Extraction Strategy](#extraction-strategy)
+    *   [Defining "Unmet Need"](#defining-unmet-need)
+4.  [Methodology & Phases](#methodology--phases)
+    *   [Project Structure](#project-structure)
+    *   [Phase 1 – NSDUH 2019](#phase-1--nsduh-2019-current-stage)
+    *   [Phase 2 – Multi-Year NSDUH Integration](#phase-2--multi-year-nsduh-integration-20202023)
+    *   [Phase 3 – TEDS Integration](#phase-3--teds-integration-future-phase)
+5.  [ETL & Data Engineering](#etl--data-engineering)
+    *   [ETL Documentation](#etl-documentation)
+    *   [Data Refinement and Table Standardization](#data-refinement-and-table-standardization-20192023)
+    *   [Variable Recoding & Renaming](#phase-1--nsduh-2019-current-stage)
+    *   [Data Type Enforcement](#data-type-enforcement)
+    *   [Import Verification](#import-verification)
+6.  [Analysis & Findings](#analysis--findings)
+    *   [Key Findings 2019](#key-findings-2019_nsduh)
+    *   [Exploratory Data Analysis](#exploratory-data-analysis)
+    *   [Demographics](#demographics)
+    *   [Employment Status](#employment-status)
+    *   [Interpretation of Preliminary Findings](#interpretation-of-preliminary-findings)
+7.  [Discussion & Recommendations](#discussion--recommendations)
+    *   [Recommendations for Further Action](#recommendations-for-further-action-and-study)
+    *   [Note on Unmet Need vs Workplace Access](#note-why-access-at-work-is-not-included-in-unmet-need)
+
+---
+
+## Project Overview
+
+### Rationale
+
+This project builds on a long-standing engagement with mental health, informed by professional experience in treatment settings, formal training in psychology, and previously published work with a major publisher (Atria / Beyond Words, 2009/2018) on addiction and mental health. Subsequent publications included a non-fiction public health book based on an academic literature review of neurophysiology and addiction. Early work drew on SAMHSA datasets to explore recovery-related questions, establishing both familiarity with federal behavioral-health data and a track record of translating complex public-health information for broad audiences.
+
+With a transition into data analytics and a growing focus on the healthcare vertical, the need was obvious to revisit these datasets from a new perspective—one that integrates domain knowledge with modern analytical tooling. The guiding objective was to identify a question that is both substantively meaningful and analytically strong enough to showcase technical skill.
+
+Through a review of available SAMHSA surveys and exploratory inquiry into underexamined areas, one relationship emerged as especially relevant to employers and policymakers: whether unmet mental-health need is associated with weaker employment outcomes. NSDUH offers a large, scientifically rigorous sample well suited to investigating this relationship.
+
+From the full 2,741-variable NSDUH file, a targeted subset of fields was manually isolated in Excel, exported to CSV, and imported into PostgreSQL for structured cleaning and schema alignment. Subsequent preparation steps, harmonization, and analytic workflows are documented in later sections of this README.
+
+### Summary
+
+This SQL-based mini study combines NSDUH population survey data with TEDS-A treatment admissions data to explore how unmet or untreated mental health needs relate to workforce detachment. The analysis demonstrates ETL workflow clarity, SQL analytic structure, and workforce policy relevance through hypothesis-driven modeling across multiple federal datasets.
+
+*Draft Note (Variant):* This SQL-based mini study ultimately (Phase 3) combines NSDUH population survey data with TEDS-A treatment admissions data to explore how unmet or untreated mental health needs relate to workforce detachment. The analysis demonstrates ETL workflow clarity, SQL analytic structure, and workforce policy relevance through hypothesis-driven modeling across multiple federal datasets.
+
+### Why It Matters
+
+-   Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across *systems, verticals and industries*
+-   Quantifying this link supports business HR and social economic policy, treatment funding, and workforce retention strategies
+-   Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics and further study.
+-   There are many questions left to explore, validate or invalidate in this repo. Please contribute your own branch of analysis!
+
+*(Original Version)*:
+-   Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across systems
+-   Quantifying this link supports economic policy, treatment funding, and workforce retention strategies
+-   Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics
+
+---
+
+## Hypotheses
 
 ### Primary Hypothesis (NSDUH)
 
@@ -12,10 +84,16 @@ Adults reporting unmet need for mental health treatment have higher odds of bein
 
 **Operationalization (NSDUH):**
 
-* **Exposure:** `AMHTXND2 = 1` (unmet need for mental health treatment in past 12 months)
-* **Outcome:** `IRWRKSTAT ∈ {Unemployed, Not in labor force}`
-* **Covariates:** `AGE2`, `IRSEX`, `NEWRACE2`, `IREDUHIGHST2`, survey weights (`ANALWT_C`), design (`VESTR`, `VEREP`)
-* **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `AMHTXND2=1` vs `0`
+-   **Exposure:** `AMHTXND2 = 1` (unmet need for mental health treatment in past 12 months)
+-   **Outcome:** `IRWRKSTAT ∈ {Unemployed, Not in labor force}`
+-   **Covariates:** `AGE2`, `IRSEX`, `NEWRACE2`, `IREDUHIGHST2`, survey weights (`ANALWT_C`), design (`VESTR`, `VEREP`)
+-   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `AMHTXND2=1` vs `0`
+
+### Formal Hypothesis
+
+Adults who report an unmet need for mental health treatment are more likely to be unemployed. being unemployed or out of the labor force than adults without unmet need, controlling for age, sex, race/ethnicity, and education.
+
+*Primary Hypothesis (NSDUH only):* Unmet need Access, or unmet need for mental health services predicts employment status. We ask if lack of access to mental health care affects one’s ability to maintain employment, and what groups show the highest unmet need.
 
 ### Secondary Hypothesis (TEDS-A)
 
@@ -23,244 +101,192 @@ Among treatment admissions, clients with a reported mental health problem have h
 
 **Operationalization (TEDS-A 2019–2022):**
 
-* **Exposure:** `PSYPROB = 1` (co-occurring mental health problem)
-* **Outcome:** `EMPLOY ∈ {Unemployed, Not in labor force}`
-* **Covariates:** `AGE` (categorical), `SEX`, `RACE/ETHNIC`, `EDUC`, state (`STFIPS`), year
-* **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `PSYPROB=1` vs `0`
+-   **Exposure:** `PSYPROB = 1` (co-occurring mental health problem)
+-   **Outcome:** `EMPLOY ∈ {Unemployed, Not in labor force}`
+-   **Covariates:** `AGE` (categorical), `SEX`, `RACE/ETHNIC`, `EDUC`, state (`STFIPS`), year
+-   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `PSYPROB=1` vs `0`
 
 ### Integrated Cross-Dataset Hypothesis
 
 Signals of unmet or untreated mental health need (`NSDUH AMHTXND2=1`) at the population level correspond with higher unemployment/OLF at point-of-treatment (`TEDS-A PSYPROB=1`), i.e., counties/years with higher NSDUH unmet-need prevalence will show higher shares of unemployed/OLF status among TEDS-A admissions, after adjusting for demographics and year.
 
-## Summary
+---
 
-This SQL-based mini study combines NSDUH population survey data with TEDS-A treatment admissions data to explore how unmet or untreated mental health needs relate to workforce detachment.
-The analysis demonstrates ETL workflow clarity, SQL analytic structure, and workforce policy relevance through hypothesis-driven modeling across multiple federal datasets.
+## Data Source: The NSDUH Study
 
-## Why It Matters
+### **The Gold Standard for Behavioral Health Data**
+The **National Survey on Drug Use and Health (NSDUH)** is the primary source of statistical information on the use of illicit drugs, alcohol, and tobacco in the U.S. civilian, non-institutionalized population aged 12 and older. Conducted annually by the Substance Abuse and Mental Health Services Administration (SAMHSA), this study provides a crucial, nationally representative window into the intersection of mental health, substance use, and socioeconomic status.
 
-* Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across systems
-* Quantifying this link supports economic policy, treatment funding, and workforce retention strategies
-* Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics
+### **Navigating Signal vs. Noise**
+The NSDUH public-use files are massive, containing **2,741 distinct variables** per year. This complexity presents a significant data engineering challenge: distinguishing between similar-sounding variables (e.g., "received treatment" vs. "perceived unmet need" vs. "needed but did not receive treatment") requires deep domain expertise.
 
-## Key Findings
+### **Extraction Strategy**
+Rather than ingesting the full wide-format dataset, we executed a targeted **manual extraction strategy**:
+1.  **Variable Isolation**: We audited the 2,741-variable schema to effectively isolate the <15 key fields that drive our specific hypothesis.
+2.  **Harmonization**: We traced these specific variable codes (`AMHTXND2`, `IRWRKSTAT`, etc.) across five years of data (2019-2023) to account for schema drift and changing definitions.
+3.  **ETL Pipeline**: These targeted subsets were exported to CSV and ingested into PostgreSQL, ensuring our analytics run on a clean, optimized schema rather than a bloated raw file.
 
-Pending.
-(This section will summarize odds ratios and population-level correlations once model outputs are complete.)
+### **Defining "Unmet Need"**
+Our primary exposure variable, `AMHTXND2`, is not a simple "Yes/No" question. It is a derived variable constructed from a complex logic tree of survey questions:
+*   *"During the past 12 months, was there any time when you needed mental health treatment or counseling for yourself but didn’t get it?"*
+*   Follow-up probes regarding specific barriers (cost, stigma, access).
+*   verification against service utilization records.
 
-## ETL Documentation
-
-### Extract
-
-Documented PowerShell commands and SQL scripts used to import and harmonize NSDUH (2019–2023) and TEDS-A (2019–2022) into PostgreSQL.
-(See: `/docs/etl_nsduh_teds.docx`)
-
-=======
-
-# Unmet Mental Health Need and Employment Outcomes
-
-# Mini SQL Project \| Data Sources: NSDUH (2019–2023) and TEDS-A (2019–2022)
-
-## Project Rationale
-
-This project builds on a long-standing engagement with mental health, informed by professional experience in treatment settings, formal training in psychology, and previously published work with a major publisher (Atria / Beyond Words, 2009/2018) on addiction and mental health. Subsequent publications included a non-fiction public health book based on an academic literature review of neurophysiology and addiction. Early work drew on SAMHSA datasets to explore recovery-related questions, establishing both familiarity with federal behavioral-health data and a track record of translating complex public-health information for broad audiences.
-
-With a transition into data analytics and a growing focus on the healthcare vertical, the need was obvious to revisit these datasets from a new perspective—one that integrates domain knowledge with modern analytical tooling. The guiding objective was to identify a question that is both substantively meaningful and analytically strong enough to showcase technical skill.
->>>>>>> 508fad7 (Update README)
-
-Through a review of available SAMHSA surveys and exploratory inquiry into underexamined areas, one relationship emerged as especially relevant to employers and policymakers: whether unmet mental-health need is associated with weaker employment outcomes. NSDUH offers a large, scientifically rigorous sample well suited to investigating this relationship.
-
-From the full 2,741-variable NSDUH file, a targeted subset of fields was manually isolated in Excel, exported to CSV, and imported into PostgreSQL for structured cleaning and schema alignment. Subsequent preparation steps, harmonization, and analytic workflows are documented in later sections of this README.
-
-## Hypothesis
-
-<<<<<<< HEAD
-## Project Structure  
-
-******************
-
-```markdown
-## Data Refinement and Table Standardization (2019–2023)
-
-### Overview
-Extended multi-year integration through 2023 for NSDUH and TEDS-A using raw SAMHSA public-use tab files. For each year, extracted only required headers in Excel, saved CSV subsets, imported to PostgreSQL, then applied readable column names for consistent schemas across years.
+This rigorous definition ensures that when we measure "unmet need," we are capturing a validated signal of healthcare disparity, not just casual sentiment.
 
 ---
 
-### Workflow Summary (per year, per dataset)
-1. Open raw `.tab` file in Excel.  
-2. Use header filter to locate required variables.  
-3. Copy only required columns into a clean worksheet.  
-4. Save as `*_YYYY_subset.csv` (UTF-8, comma-delimited).  
-5. In pgAdmin: create target table → Import CSV (Header = Yes, Delimiter = Comma, Encoding = UTF8).  
-6. Validate import:
+## Methodology & Phases
 
-```
+### Project Structure
+
+| **Stage** | **Objective** | **Output** |
+| :--- | :--- | :--- |
+| Ask / Plan | Define hypotheses, outcomes, covariates | Operational definitions |
+| Prepare | Import, rename, validate datasets, address schema drift, variable consistency, null values, data types. | Clean PostgreSQL tables |
+| Process / Analyze | NSDUH, Phase 1, TEDS-A, Phase 2-3<br>Frequency and Distribution, Descriptive Statistica, Chi-Square, Phase 3 Logistic regressions | Adjusted odds ratios |
+| Construct / Share | Export CSVs to Tableau | Dashboards and reports |
+| Execute / Act | Present findings | Executive brief, Full PDF publication and a short video presentation |
+
+### Phase 1 – NSDUH 2019 (current stage)
+
+*Recoding variables for clarity is detailed in the ETL section.*
+
+#### Phase 2 – Multi-Year NSDUH Integration (2020–2023)
+
+After 2019 is complete, identical transformations will be applied to the 2020–2023 files. These later years introduce schema drift, including *schema drift*, changes in:
+
+-   Employment status coding
+-   Missing/unavailable variables
+-   Unmet-need measurement shifting to three mental-health service variables (2022–2023)
+-   Those differences are *not* handled here; they are handled in Phase 2.
+
+#### Phase 3 – TEDS Integration (Future Phase)
+
+(See Secondary and Integrated Hypotheses details above).
+
+---
+
+## ETL & Data Engineering
+
+### ETL Documentation
+
+#### Extract
+Documented PowerShell commands and SQL scripts used to import and harmonize NSDUH (2019–2023) and TEDS-A (2019–2022) into PostgreSQL. (See: `/docs/etl_nsduh_teds.docx`)
+
+Data Sources: NSDUH (2019–2023) and TEDS-A (2019–2022)
+
+#### Transform
+Pending implementation. Will include SQL queries for cleaning, joining, and structuring tables by variable categories (mental health indicators, productivity, demographics).
+
+#### Load
+Pending. Will document PostgreSQL load process for analysis-ready schema.
+
+### Data Refinement and Table Standardization (2019–2023)
+
+**Overview:** Extended multi-year integration through 2023 for NSDUH and TEDS-A using raw SAMHSA public-use tab files. For each year, extracted only required headers in Excel, saved CSV subsets, imported to PostgreSQL, then applied readable column names for consistent schemas across years.
+
+**Workflow Summary (per year, per dataset):**
+1. Open raw `.tab` file in Excel.
+2. Use header filter to locate required variables.
+3. Copy only required columns into a clean worksheet.
+4. Save as `*_YYYY_subset.csv` (UTF-8, comma-delimited).
+5. In pgAdmin: create target table → Import CSV (Header = Yes, Delimiter = Comma, Encoding = UTF8).
+6. Validate import:
+```sql
 SELECT COUNT(*) FROM table_name;
-```
-```
 SELECT * FROM table_name LIMIT 10;
 ```
 
----
+**Variables Extracted:**
+*   **NSDUH (2019–2023)**: `AMHTXND2`, `IRWRKSTAT`, `AGE2/CATAGE` (year-specific), `IRSEX`, `NEWRACE2`, `IREDUHIGHST2`, `FILEDATE`, `ANALWT_C`, `VESTR` (year-specific), `VEREP`
 
-### Variables Extracted
-
-**NSDUH (2019–2023)**  
-AMHTXND2, IRWRKSTAT, AGE2/CATAGE (year-specific), IRSEX, NEWRACE2, IREDUHIGHST2, FILEDATE, ANALWT_C, VESTR (year-specific), VEREP
-
-**Exact headers used by year**
+**Exact headers used by year:**
 
 | Year | Age field | Weight field | Stratum field | Replicate field |
-|------|------------|---------------|----------------|-----------------|
-| 2019 | AGE2       | ANALWT_C      | VESTR          | VEREP           |
-| 2020 | AGE2       | ANALWT_C      | VESTR          | VEREP           |
-| 2021 | CATAGE     | ANALWT_C      | VESTR          | VEREP           |
-| 2022 | CATAGE     | ANALWT_C      | VESTR          | VEREP           |
-| 2023 | CATAGE     | ANALWT_C      | VESTR          | VEREP           |
+| :--- | :--- | :--- | :--- | :--- |
+| 2019 | AGE2 | ANALWT_C | VESTR | VEREP |
+| 2020 | AGE2 | ANALWT_C | VESTR | VEREP |
+| 2021 | CATAGE | ANALWT_C | VESTR | VEREP |
+| 2022 | CATAGE | ANALWT_C | VESTR | VEREP |
+| 2023 | CATAGE | ANALWT_C | VESTR | VEREP |
 
----
+**Header normalization and readable renames (applied after import):**
 
-### Header normalization and readable renames (applied after import)
+*2019–2020*
+- AGE2 → age_group
+- ANALWT_C → person_weight
+- VESTR → variance_stratum
+- VEREP → variance_replicate
 
-**2019–2020**
-- AGE2 → age_group  
-- ANALWT_C → person_weight  
-- VESTR → variance_stratum  
-- VEREP → variance_replicate  
+*2021–2023*
+- CATAGE → AGE2
+- AGE2 → age_group
+- ANALWT_C → person_weight
+- VESTR → variance_stratum
+- VEREP → variance_replicate
 
-**2021–2023**
-- CATAGE → AGE2  
-- AGE2 → age_group  
-- ANALWT_C → person_weight  
-- VESTR → variance_stratum  
-- VEREP → variance_replicate  
+#### Recoding Variables for Clarity
 
----
+| Original | Renamed | Description |
+| :--- | :--- | :--- |
+| AMHTXND2 | unmet_need | Unmet need for mental health treatment (past 12 months) |
+| IRWRKSTAT | employment_status | Employment status (employed / unemployed / not in labor force) |
+| AGE2 / CATAGE | age_group | Age category (normalized across years) |
+| IRSEX | sex | Sex |
+| NEWRACE2 | race_ethnicity | Race/ethnicity (combined) |
+| IREDUHIGHST2 | education_level | Highest education level |
+| FILEDATE | survey_date | Record/survey date |
+| ANALWT_C | person_weight | Person-level survey weight |
+| VESTR | variance_stratum | Variance estimation stratum |
+| VEREP | variance_replicate | Variance replicate |
 
-### NSDUH example (2021 normalization + rename)
+*TEDS-A (2019–2022)*
+| Original | Renamed | Description |
+| :--- | :--- | :--- |
+| ADM_YR | admission_year | Admission year |
+| CASEID | case_id | Admission identifier |
+| STFIPS | state_fips | State FIPS |
+| EMPLOY | employment_status | Employment status at admission |
+| PSYPROB | mental_health_problem | Co-occurring mental health problem |
+| AGE | age_group | Age group at admission |
+| SEX | sex | Sex |
+| RACE | race | Race |
+| ETHNIC | ethnicity | Ethnicity (Hispanic origin) |
+| EDUC | education_level | Highest education attained |
+| DIVISION | census_division | U.S. Census division |
+| REGION | census_region | U.S. Census region |
 
-```
---Normalize 2021 age header then apply readable names
-ALTER TABLE nsduh_2021 RENAME COLUMN catage TO age2;
+#### SQL Examples (Data Refinement)
 
+*NSDUH example (2021 normalization + rename):*
+```sql
+/* ============================================================
+   Normalize 2021 age header, then apply readable column names
+   Dataset: NSDUH 2021
+   ============================================================ */
+
+-- Step 1: Normalize age header
 ALTER TABLE nsduh_2021
-  RENAME COLUMN amhtxnd2    TO unmet_need,
-  RENAME COLUMN irwrkstat    TO employment_status,
-  RENAME COLUMN age2         TO age_group,
-  RENAME COLUMN irsex        TO sex,
-  RENAME COLUMN newrace2     TO race_ethnicity,
-  RENAME COLUMN ireduhighst2 TO education_level,
-  RENAME COLUMN filedate     TO survey_date,
-  RENAME COLUMN analwt_c     TO person_weight,
-  RENAME COLUMN vestr        TO variance_stratum,
-  RENAME COLUMN verep        TO variance_replicate;
+RENAME COLUMN catage TO age2;
+
+-- Step 2: Apply readable, analysis-ready column names
+ALTER TABLE nsduh_2021
+    RENAME COLUMN amhtxnd2        TO unmet_need,
+    RENAME COLUMN irwrkstat       TO employment_status,
+    RENAME COLUMN age2            TO age_group,
+    RENAME COLUMN irsex           TO sex,
+    RENAME COLUMN newrace2        TO race_ethnicity,
+    RENAME COLUMN ireduhighst2    TO education_level,
+    RENAME COLUMN filedate        TO survey_date,
+    RENAME COLUMN analwt_c        TO person_weight,
+    RENAME COLUMN vestr           TO variance_stratum,
+    RENAME COLUMN verep           TO variance_replicate;
 ```
 
----
-
-### NSDUH example (2022 readable rename)
-
-```
-ALTER TABLE nsduh_2022
-  RENAME COLUMN amhtxnd2    TO unmet_need,
-  RENAME COLUMN irwrkstat    TO employment_status,
-  RENAME COLUMN age2         TO age_group,
-  RENAME COLUMN irsex        TO sex,
-  RENAME COLUMN newrace2     TO race_ethnicity,
-  RENAME COLUMN ireduhighst2 TO education_level,
-  RENAME COLUMN filedate     TO survey_date,
-  RENAME COLUMN analwt_c     TO person_weight,
-  RENAME COLUMN vestr        TO variance_stratum,
-  RENAME COLUMN verep        TO variance_replicate;
-```
-
----
-
-### TEDS-A (2019–2023)
-Imported fields each year:  
-ADM_YR, CASEID, STFIPS, EMPLOY, PSYPROB, AGE, SEX, RACE, ETHNIC, DIVISION, REGION
-
-**TEDS-A example (2023 readable rename)**
-
-```
-ALTER TABLE teds_a_2023
-  RENAME COLUMN adm_yr   TO admission_year,
-  RENAME COLUMN caseid   TO case_id,
-  RENAME COLUMN stfips   TO state_fips,
-  RENAME COLUMN employ   TO employment_status,
-  RENAME COLUMN psyprob  TO mental_health_problem,
-  RENAME COLUMN age      TO age_group,
-  RENAME COLUMN sex      TO sex,
-  RENAME COLUMN race     TO race,
-  RENAME COLUMN ethnic   TO ethnicity,
-  RENAME COLUMN division TO census_division,
-  RENAME COLUMN region   TO census_region;
-```
-
----
-
-### Import Verification
-
-```
--- Schema check across all tables
-SELECT table_name, column_name, data_type
-FROM information_schema.columns
-WHERE table_schema='public'
-  AND table_name IN (
-    'nsduh_2019','nsduh_2020','nsduh_2021','nsduh_2022','nsduh_2023',
-    'teds_a_2019','teds_a_2020','teds_a_2021','teds_a_2022','teds_a_2023'
-  )
-ORDER BY table_name, ordinal_position;
-
--- Row counts for all ten tables
-SELECT 'nsduh_2019' AS t, COUNT(*) FROM nsduh_2019 UNION ALL
-SELECT 'nsduh_2020', COUNT(*) FROM nsduh_2020 UNION ALL
-SELECT 'nsduh_2021', COUNT(*) FROM nsduh_2021 UNION ALL
-SELECT 'nsduh_2022', COUNT(*) FROM nsduh_2022 UNION ALL
-SELECT 'nsduh_2023', COUNT(*) FROM nsduh_2023 UNION ALL
-SELECT 'teds_a_2019', COUNT(*) FROM teds_a_2019 UNION ALL
-SELECT 'teds_a_2020', COUNT(*) FROM teds_a_2020 UNION ALL
-SELECT 'teds_a_2021', COUNT(*) FROM teds_a_2021 UNION ALL
-SELECT 'teds_a_2022', COUNT(*) FROM teds_a_2022 UNION ALL
-SELECT 'teds_a_2023', COUNT(*) FROM teds_a_2023;
-```
-
----
-
-### Completed Tables
-**NSDUH:** nsduh_2019, nsduh_2020, nsduh_2021, nsduh_2022, nsduh_2023  
-**TEDS-A:** teds_a_2019, teds_a_2020, teds_a_2021, teds_a_2022, teds_a_2023
-```
-
-** Extract raw data tables for 2022 and 2023 to deal with schema drift. Those years changed unmet_need to three scores and changed spelling on other variables. All column names and spellings matched for joining.
-```
-DROP TABLE IF EXISTS nsduh_2022_raw;
-
-CREATE TABLE nsduh_2022_raw (
-    MHTRTPY INT,
-    MHTSHLDTX INT,
-    MHTSKTHPY NUMERIC,     -- Must be NUMERIC to handle decimal/NaN values
-    IRWRKSTAT INT,
-    AGE2 INT,
-    IRSEX INT,
-    NEWRACE2 INT,
-    IREDUHIGHST2 INT,
-    FILEDATE TEXT,         -- Must be TEXT to handle date strings (e.g., '11/4/2024')
-    ANALWT2_C NUMERIC,     -- Must be NUMERIC for the weight values
-    VESTR_C INT,
-    VEREP INT
-);
-```
-
-** Create new nsduh_2022 table based on nsduh_2022_raw table, with calculated unmet_need, renamed
-** variables to match 2019-2021. Note: 2022 and 2023's unmet_need is a calculation derived from mhtrtpy, 
-** mhtshldtx, and mhtskthpy, as shown below.  
-
-
-```
-DROP TABLE IF EXISTS nsduh_2022;
-
+*Handling Schema Drift (2022-2023 Unmet Need Calculation):*
+```sql
+-- Create new nsduh_2022 table based on nsduh_2022_raw table, with calculated unmet_need
 CREATE TABLE nsduh_2022 AS
 SELECT
     CASE
@@ -272,778 +298,39 @@ SELECT
              AND COALESCE(mhtshldtx, 2) IN (0, 2)
              AND COALESCE(mhtskthpy, 2) IN (0, 2) THEN 0
 -- everything else → null
-        ELSE NULL			
--- keep only unmet_need_revised, not the three cols it was derived from 		
+        ELSE NULL
+-- keep only unmet_need_revised, not the three cols it was derived from
     END AS unmet_need_revised,
     irwrkstat,
     age2,
-    irsex,
-    newrace2,
-    ireduhighst2,
-    filedate,
-    analwt2_c,
-    vestr_c,
+-- ... (other columns)
     verep
 FROM nsduh_2022_raw;
 ```
 
--- check 
-```
-SELECT * from nsduh_2022_raw;
-
--- rename 2022 cols to match 2019-2021
-
-ALTER TABLE nsduh_2022 RENAME COLUMN unmet_need_revised TO unmet_need;
-ALTER TABLE nsduh_2022 RENAME COLUMN irwrkstat TO employment_status;
-ALTER TABLE nsduh_2022 RENAME COLUMN age2 TO age_group;
-ALTER TABLE nsduh_2022 RENAME COLUMN irsex TO sex;
-ALTER TABLE nsduh_2022 RENAME COLUMN newrace2 TO race_ethnicity;
-ALTER TABLE nsduh_2022 RENAME COLUMN ireduhighst2 TO education_level;
-ALTER TABLE nsduh_2022 RENAME COLUMN filedate TO survey_date;
-ALTER TABLE nsduh_2022 RENAME COLUMN analwt2_c TO person_weight;
-ALTER TABLE nsduh_2022 RENAME COLUMN vestr_c TO variance_stratum;
-ALTER TABLE nsduh_2022 RENAME COLUMN verep TO variance_replicate;
-```
---Repeat for 2023
-
-** Enforce Data Types across table years 
-| Column Name        | Data Type | Usage & Consistency Work                                                                       |
-| ------------------ | --------- | ---------------------------------------------------------------------------------------------- |
-=======
-## Preliminary Hypothesis (NSDUH only)
-
-Unmet need Access, or unmet need for mental health services predicts employment status. We ask if lack of access to mental health care affects one’s ability to maintain employment.
-
-## Formal Hypothesis
-
-Adults who report an unmet need for mental health treatment are more likely to be unemployed. being unemployed or out of the labor force than adults without unmet need, controlling for age, sex, race/ethnicity, and education.
-
-| **Stage**         | **Objective**                                                                                                                     | **Output**                                                           |
-|-------------------|-----------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| Ask / Plan        | Define hypotheses, outcomes, covariates                                                                                           | Operational definitions                                              |
-| Prepare           | Import, rename, validate datasets, address schema drift, variable consistency, null values, data types.                           | Clean PostgreSQL tables                                              |
-| Process / Analyze | NSDUH, Phase 1, TEDS-A, Phase 2-3<br>Frequency and Distribution, Descriptive Statistica, Chi-Square, Phase 3 Logistic regressions | Adjusted odds ratios                                                 |
-| Construct / Share | Export CSVs to Tableau                                                                                                            | Dashboards and reports                                               |
-| Execute / Act     | Present findings                                                                                                                  | Executive brief, Full PDF publication and a short video presentation |
-
-## Phase 1 – NSDUH 2019 (current stage)
-
-## Phase 2 – Multi-Year NSDUH Integration (2020–2023)
-
-After Phase 1 is complete, identical transformations will be applied to the 2020–2023 files. These later years introduce schema drift, including changes in:
-
--   Employment status coding
--   Missing/unavailable variables
--   Unmet-need measurement shifting to three mental-health service variables (2022–2023)
--   Those differences are *not* handled here; they are handled in Phase 2.
-
-## 
-
-## Phase 3 – TEDS Integration (Future Phase)
-
-**Operationalization (NSDUH):**
-
--   **Exposure:** `AMHTXND2 = 1` (unmet need for mental health treatment in past 12 months)
--   **Outcome:** `IRWRKSTAT ∈ {Unemployed, Not in labor force}`
--   **Covariates:** `AGE2`, `IRSEX`, `NEWRACE2`, `IREDUHIGHST2`, survey weights (`ANALWT_C`), design (`VESTR`, `VEREP`)
--   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `AMHTXND2=1` vs `0`
-
-## Secondary Hypothesis (TEDS-A)
-
-Among treatment admissions, clients with a reported mental health problem have higher odds of being unemployed or not in the labor force at admission than clients without a reported mental health problem.
-
-**Operationalization (TEDS-A 2019–2022):**
-
--   **Exposure:** `PSYPROB = 1` (co-occurring mental health problem)
--   **Outcome:** `EMPLOY ∈ {Unemployed, Not in labor force}`
--   **Covariates:** `AGE` (categorical), `SEX`, `RACE/ETHNIC`, `EDUC`, state (`STFIPS`), year
--   **Estimand:** Adjusted odds ratio of unemployment/OLF comparing `PSYPROB=1` vs `0`
-
-## Integrated Cross-Dataset Hypothesis
-
-Signals of unmet or untreated mental health need (`NSDUH AMHTXND2=1`) at the population level correspond with higher unemployment/OLF at point-of-treatment (`TEDS-A PSYPROB=1`), i.e., counties/years with higher NSDUH unmet-need prevalence will show higher shares of unemployed/OLF status among TEDS-A admissions, after adjusting for demographics and year.
-
-## Summary
-
-This SQL-based mini study ultimately (Phase 3) combines NSDUH population survey data with TEDS-A treatment admissions data to explore how unmet or untreated mental health needs relate to workforce detachment. The analysis demonstrates ETL workflow clarity, SQL analytic structure, and workforce policy relevance through hypothesis-driven modeling across multiple federal datasets.
-
-## Why It Matters
-
--   Workforce mental health loss is measurable through unmet need and co-occurring disorder prevalence across *systems, verticals and industries*
--   Quantifying this link supports business HR and social economic policy, treatment funding, and workforce retention strategies
--   Establishing reproducible SQL and ETL workflows provides a transparent foundation for integrated behavioral health analytics and further study.
-
-# Key Findings
-
-# Phase 1
-
-# Exploratory Data Analysis
-
-Summary statistics were gathered on a subset of self-reported unmet need by age, race, sex, education level.
-
-# Frequencies, Counts and Percent of Total
-
-## Define the populations
-
-## Overall sample (all ages, full NSDUH 2019 analytic set) ![](media/91b4acff0e95e80ddc586a5d2fa2f190.png)
-
-![](media/526f22d3206602dc505d1f0cc1e8c85b.png)
-
-# Demographics
-
-## Age-groups (excludes under 18)
-
-![](media/adfb68d742f2c0b90ca898e7231b1d16.png)
-
-### Focus age group
-
-![](media/9682edf87f707db6bacd100eb1307408.png)
-
-Because 18–25-year-olds account for the largest share of unmet-need cases in the full sample, all subsequent subgroup analyses focus on respondents aged 18–25 with unmet need.
-
-*![](media/422fad76d7698b26da8c9747ffb6e23e.png)*
-
-## Sex
-
-![](media/ffa3c1e969ff0bfdf80bf6813fc0ca66.png)
-
-Within 18-25 with unmet need, females dominate males in terms of reporting unmet mental health need. However, this finding is misleading. As shown below, a higher *within-group %* for females can coexist with males showing the  
-strongest relationship in a chi-square output, because chi-square is driven by  
-**how far each cell is from its expected count**, not by which group has the  
-bigger row percentage.
-
-## Race/Ethnicity
-
-![](media/7412b8e03e79fc8f986e116a9d8c06c2.png)
-
-Within 18-25 with unmet need, whites dominate other races in terms of reporting unmet mental health need.
-
-## Education level
-
-## ![](media/97b981dfbaf89552660e2ef09a420f40.png)
-
-Within 18-25 with unmet need, college graduates dominate lower education levels in terms of reporting unmet mental health need.
-
-## Employment status
-
-## Within 18-25 with unmet need, employed (full time or part time) dominates unemployed in terms of reporting unmet mental health need.
-
-## 
-
-![](media/ba6fe9b1cb34fa3bb79089b93609d65a.png)
-
-*Among 18–25-year-olds with unmet need, white females  account for the largest share of unmet-need cases.*
-
-*This answers the  question:*
-
-*Of all the 18–25 respondents who report unmet need, which demographic groups dominate the unmet-need burden?*
-
-1.  *Step 6: Connection to chi-square*
-
-A higher *within-group %* for females can coexist with males showing the  
-“strongest relationship” in a chi-square output, because chi-square is driven by  
-**how far each cell is from its expected count**, not by which group has the  
-bigger row percentage.
-
-*The chi-square tests use a slightly larger table behind the scenes:*
-
--   *Age = 18–25*
--   *Rows: demographic categories*
--   *Columns: Unmet need = Yes, Unmet need = No*
--   *Cells: counts*
-
-*Those contingency tables already exist and feed the chi-square.*
-
-*The demographic burden charts for 18–25 with unmet need are the descriptive slice of those tables, restricted to the “Unmet need = Yes” column and normalized by* $$N_{\text{unmet} , 18 \text{–} 25}$$*.*
-
-*This keeps the story consistent:*
-
--   *Steps 1–2 justify focusing on age 18–25.*
--   *Step 3 defines the analytic population going forward: age 18–25 with unmet need.*
--   *Steps 4–6 identify, for each demographic, who dominates the unmet-need burden inside that population.*
--   *The chi-square results then test whether unmet need is statistically associated with those demographic variables across 18–25-year-olds.*
-
-The hidden story.
-
-The first attempted logistic regression failed because both predictors—unmet need and employment status—were coded as categorical integers with no underlying continuous scale. Treating category labels as numeric produced an artificial Pearson correlation of **0.13**, a *meaningless* value that reflects the arbitrary numbering of categories rather than any real monotonic association.
-
-Logistic regression also failed because logistic models require a binary outcome variable, but unmet need was used as both predictor and outcome across different attempts, and neither variable was structured for the assumptions of the model. Because NSDUH 2019 in Phase 1 contains only categorical predictors without a properly coded binary dependent variable, the model was structurally impossible.
-
-Phase Three will fix this by using a **multinomial logistic regression** with unmet need as the categorical outcome variable and employment status, age group, sex, race, ethnicity, and education as categorical predictors. This modeling structure will correctly estimate log-odds for each unmet-need level relative to a reference category, using proper dummy encoding rather than numeric labels. This will become feasible only after Phase Two has produced the combined 2019–2023 harmonized dataset and Phase Three adds the additional predictors and sample size required for stable estimation.
-
--   **Data Source:** The data comes from the nsduh_2019_final.csv file, which is a public-use dataset from a survey that collects national estimates on substance use and mental health in the U.S. civilian noninstitutionalized population aged 12 and older.
-
-# Full Sample (non-null)
-
-![](media/4f6a9c246724ca2f1d471841f3bbd60a.png)![](media/fc75a268ba91ffc53ff783dbf496c70f.png)![](media/e0ec3762a0389a393b7055a41efaa8cc.png)![](media/e95c640951265c3dac8b22da8ddcceb6.png)![](media/c13ec6ef365b82643b1cfaadf268bdc4.png)![](media/9b2e03a963e482f025d345ec2b435295.png)![](media/fcc476d793cdae143ae908596e3c39fb.png)![](media/41bdb412d4346e92d361230aa8ab73b7.png)
-
--   **Dimensions & Measures:**
-    -   **Measures:** The visualization uses the count of records (CNT(nsduh 2019 fin...)) as the measure, and a quick table calculation has been applied to show this count as a Status % of Total within each Sex group.
-    -   The percentages on top of the segments show the proportion of each employment status *within* that sex group.
-    -   For example, among males, 27.60% fall into one employment category (likely "Unemployed" given the label nearby), while 72.40% fall into another (likely "Employed").
-
-Comparison of the distribution of employment status for males versus females among a specific population subset that has a perceived "unmet need" for mental health treatment or counseling in the past year
-
-## How the contingency table indicated that there was a story.
-
-|               | Full-time | Part-time | Unemployed |
-|---------------|-----------|-----------|------------|
-| No Unmet Need | 9050      | 3467      | 969        |
-| Unmet Need    | 1402      | 691       | 201        |
-
-## 
-
-## Interpretation of Preliminary Findings
-
-• When people do not have unmet need, most are in full-time work.  
-• When people do have unmet need, the rate of unemployment and part-time work increases relative to their group size.
-
-This already signals an association: unmet mental-health need corresponds with lower employment outcomes in the population tested.  
-In the NSDUH 2019 sample, individuals without unmet mental-health need are concentrated in full-time employment, while individuals with unmet need show higher proportions of part-time employment and unemployment relative to their group size. These shifts in employment patterns indicate an observable association between unmet mental-health need and less favorable employment outcomes within this dataset.
-
-Because the analysis to this point relies on nonparametric methods—frequency tables, percentages, and chi-square—the results accurately describe the sample but should not be generalized beyond it. No distributional assumptions have been tested, and no parametric model has been fitted. The findings therefore reflect patterns within the 2019 NSDUH sample only, not population-level inferences.
-
-Subsequent phases of the project will introduce parametric modeling capable of estimating population parameters and formally testing whether unmet mental-health need predicts employment outcomes when demographic and socioeconomic controls are included.
-
-### 2. Percent-of-row vs percent-of-column confusion
-
-Tableau flips depending on which our pick:
-
-**Percent of Total**
-
-This expresses each cell as a percent of *all people combined*.  
-This dilutes the signal because full-time workers dominate the sample numerically.
-
-**Percent of Row**
-
-This expresses percentages *within unmet-need groups*.  
-This is the correct view for our hypothesis because it compares employment distribution **within each mental-health status category**.
-
-Using row percentages:
-
-**No Unmet Need (row total = 9050 + 3467 + 969 = 13,486)**
-
-Full-time = 9050 / 13,486 ≈ **67%**  
-Part-time = 3467 / 13,486 ≈ **26%**  
-Unemployed = 969 / 13,486 ≈ **7%**
-
-**Unmet Need (row total = 1402 + 691 + 201 = 2,294)**
-
-Full-time = 1402 / 2,294 ≈ **61%**  
-Part-time = 691 / 2,294 ≈ **30%**  
-Unemployed = 201 / 2,294 ≈ **9%**
-
-**Pattern:**  
-As unmet need appears, **full-time drops**, **part-time rises**, **unemployment rises**.
-
-This is the exact directional effect required to support our hypothesis.
-
-### 3. Chi-square meaning in our context
-
-The chi-square test checks whether the distribution across employment categories is statistically different between unmet-need groups.
-
-Given our table, chi-square will come out high and the p-value very low because:
-
-• The differences between rows are too large to be explained by random variation.  
-• The expected counts in all cells exceed minimum thresholds (so the test is valid).
-
-Therefore:
-
-Reject the null hypothesis.  
-Employment status is not independent of unmet mental-health need.
-
-This is exactly what “statistically significant relationship” means for our project.
-
-![](media/f91da240ab304d0c1c7219846e88eff7.png)![](media/4f6a9c246724ca2f1d471841f3bbd60a.png)
-
-### 4. How this supports the hypothesis
-
-• Employment distribution **shifts sharply** when unmet need is present.  
-• The chi-square confirms this is statistically significant, not random.  
-• The direction of the shift (less full-time, more unemployment) matches decades of mental-health research.
-
-So our data **does support** the foundational relationship required by our larger model: unmet mental-health need affects productivity-related outcomes.
-
-## 
-
-**5.** Our Tableau results show a **statistically significant and practically meaningful association** between unmet mental-health need and worse employment outcomes, supporting our hypothesis that mental-health status relates to productivity measures.
-
-## 
-
-## ETL Documentation
-
-### Extract
-
-Documented PowerShell commands and SQL scripts used to import and harmonize NSDUH (2019–2023) and TEDS-A (2019–2022) into PostgreSQL. (See: `/docs/etl_nsduh_teds.docx`)
-
-### Transform
-
-Pending implementation. Will include SQL queries for cleaning, joining, and structuring tables by variable categories (mental health indicators, productivity, demographics).
-
-### Load
-
-Pending. Will document PostgreSQL load process for analysis-ready schema.
-
-## Business Insight
-
-Pending final analysis and visualization phase.
-
-## Project Structure
-
-***
-
-# Data Load, Extract and Clean
-
-![](media/a89a36ca593e3a463d2540b7a40da0cc.png)
-
-## Data Refinement and Table Standardization (2019–2023)
-
-## Overview
-
-Extended multi-year integration through 2023 for NSDUH and TEDS-A using raw SAMHSA public-use tab files. For each year, extracted only required headers in Excel, saved CSV subsets, imported to PostgreSQL, then applied readable column names for consistent schemas across years.
-
-Workflow Summary (per year, per dataset)
-
-1\. Open raw \`.tab\` file in Excel.
-
-2\. Use header filter to locate required variables.
-
-3\. Copy only required columns into a clean worksheet.
-
-4\. Save as \`\*_YYYY_subset.csv\` (UTF-8, comma-delimited).
-
-5\. In pgAdmin: create target table → Import CSV (Header = Yes, Delimiter = Comma, Encoding = UTF8).
-
-6\. Validate import:
-
-SELECT COUNT(\*) FROM table_name;
-
-SELECT \* FROM table_name LIMIT 10;
-
-## Variables Extracted
-
-\*\*NSDUH (2019–2023)\*\*
-
-AMHTXND2, IRWRKSTAT, AGE2/CATAGE (year-specific), IRSEX, NEWRACE2, IREDUHIGHST2, FILEDATE, ANALWT_C, VESTR (year-specific), VEREP
-
-Exact headers used by year
-
-\| Year \| Age field \| Weight field \| Stratum field \| Replicate field \|
-
-\|------\|------------\|---------------\|----------------\|-----------------\|
-
-\| 2019 \| AGE2 \| ANALWT_C \| VESTR \| VEREP \|
-
-\| 2020 \| AGE2 \| ANALWT_C \| VESTR \| VEREP \|
-
-\| 2021 \| CATAGE \| ANALWT_C \| VESTR \| VEREP \|
-
-\| 2022 \| CATAGE \| ANALWT_C \| VESTR \| VEREP \|
-
-\| 2023 \| CATAGE \| ANALWT_C \| VESTR \| VEREP \|
-
-## Header normalization and readable renames (applied after import)
-
-\*\*2019–2020\*\*
-
-\- AGE2 → age_group
-
-\- ANALWT_C → person_weight
-
-\- VESTR → variance_stratum
-
-\- VEREP → variance_replicate
-
-\*\*2021–2023\*\*
-
-\- CATAGE → AGE2
-
-\- AGE2 → age_group
-
-\- ANALWT_C → person_weight
-
-\- VESTR → variance_stratum
-
-\- VEREP → variance_replicate
-
-## NSDUH example (2021 normalization + rename)
-
-\--Normalize 2021 age header then apply readable names ALTER TABLE nsduh_2021 RENAME COLUMN catage TO age2;
-
-ALTER TABLE nsduh_2021
-
-RENAME COLUMN amhtxnd2 TO unmet_need,
-
-RENAME COLUMN irwrkstat TO employment_status,
-
-RENAME COLUMN age2 TO age_group,
-
-RENAME COLUMN irsex TO sex,
-
-RENAME COLUMN newrace2 TO race_ethnicity,
-
-RENAME COLUMN ireduhighst2 TO education_level,
-
-RENAME COLUMN filedate TO survey_date,
-
-RENAME COLUMN analwt_c TO person_weight,
-
-RENAME COLUMN vestr TO variance_stratum,
-
-RENAME COLUMN verep TO variance_replicate;
-
-NSDUH — 2022 readable rename
-
-ALTER TABLE nsduh_2022
-
-RENAME COLUMN amhtxnd2 TO unmet_need,
-
-RENAME COLUMN irwrkstat TO employment_status,
-
-RENAME COLUMN age2 TO age_group,
-
-RENAME COLUMN irsex TO sex,
-
-RENAME COLUMN newrace2 TO race_ethnicity,
-
-RENAME COLUMN ireduhighst2 TO education_level,
-
-RENAME COLUMN filedate TO survey_date,
-
-RENAME COLUMN analwt_c TO person_weight,
-
-RENAME COLUMN vestr TO variance_stratum,
-
-RENAME COLUMN verep TO variance_replicate;
-
-TEDS-A — 2023 readable rename
-
-ALTER TABLE teds_a_2023
-
-RENAME COLUMN adm_yr TO admission_year,
-
-RENAME COLUMN caseid TO case_id,
-
-RENAME COLUMN stfips TO state_fips,
-
-RENAME COLUMN employ TO employment_status,
-
-RENAME COLUMN psyprob TO mental_health_problem,
-
-RENAME COLUMN age TO age_group,
-
-RENAME COLUMN sex TO sex,
-
-RENAME COLUMN race TO race,
-
-RENAME COLUMN ethnic TO ethnicity,
-
-RENAME COLUMN division TO census_division,
-
-RENAME COLUMN region TO census_region;
-
-## Import Verification Queries
-
-Schema check across all tables
-
-SELECT table_name,
-
-column_name,
-
-data_type
-
-FROM information_schema.columns
-
-WHERE table_schema = 'public'
-
-AND table_name IN (
-
-'nsduh_2019','nsduh_2020','nsduh_2021','nsduh_2022','nsduh_2023',
-
-'teds_a_2019','teds_a_2020','teds_a_2021','teds_a_2022','teds_a_2023'
-
-)
-
-ORDER BY table_name, ordinal_position;
-
-Extract raw data tables for 2022 and 2023 to deal with schema drift. Those years changed unmet_need to three scores and changed spelling on other variables. All column names and spellings matched for joining.
-
-DROP TABLE IF EXISTS nsduh_2022_raw;
-
-CREATE TABLE nsduh_2022_raw (
-
-MHTRTPY INT,
-
-MHTSHLDTX INT,
-
-MHTSKTHPY NUMERIC, -- Must be NUMERIC to handle decimal/NaN values
-
-IRWRKSTAT INT,
-
-AGE2 INT,
-
-IRSEX INT,
-
-NEWRACE2 INT,
-
-IREDUHIGHST2 INT,
-
-FILEDATE TEXT, -- Must be TEXT to handle date strings (e.g., '11/4/2024')
-
-ANALWT2_C NUMERIC, -- Must be NUMERIC for the weight values
-
-VESTR_C INT,
-
-VEREP INT
-
-);
-
-\*\* Create new nsduh_2022 table based on nsduh_2022_raw table, with calculated unmet_need, renamed \*\* variables to match 2019-2021. Note: 2022 and 2023's unmet_need is a calculation derived from mhtrtpy, \*\* mhtshldtx, and mhtskthpy, as shown below.
-
-DROP TABLE IF EXISTS nsduh_2022;
-
-CREATE TABLE nsduh_2022 AS
-
-SELECT CASE
-
-\-- no treatment + either shelter tx or skilled therapy → unmet need = 1
-
-WHEN mhtrtpy = 1 THEN 0
-
-\-- no treatment + no shelter tx + no skilled therapy → unmet need = 0
-
-WHEN mhtrtpy = 0 AND (mhtshldtx = 1 OR mhtskthpy = 1) THEN 1
-
-WHEN mhtrtpy = 0
-
-AND COALESCE(mhtshldtx, 2) IN (0, 2)
-
-AND COALESCE(mhtskthpy, 2) IN (0, 2) THEN 0
-
-\-- everything else → null
-
-ELSE NULL
-
-\-- keep only unmet_need_revised, not the three cols it was derived from
-
-END AS unmet_need_revised,
-
-irwrkstat,
-
-age2,
-
-irsex,
-
-newrace2,
-
-ireduhighst2,
-
-filedate,
-
-analwt2_c,
-
-vestr_c,
-
-verep
-
-FROM nsduh_2022_raw;
-
-\-- check
-
-`SELECT * from nsduh_2022_raw;`
-
-`-- rename 2022 cols to match 2019-2021`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN unmet_need_revised TO unmet_need;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN irwrkstat TO employment_status;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN age2 TO age_group;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN irsex TO sex;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN newrace2 TO race_ethnicity;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN ireduhighst2 TO education_level;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN filedate TO survey_date;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN analwt2_c TO person_weight;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN vestr_c TO variance_stratum;`
-
-`ALTER TABLE nsduh_2022 RENAME COLUMN verep TO variance_replicate;`
-
-\--Repeat for 2023
-
-\*\* Enforce Data Types across table years
-
-| Column Name        | Data Type | Usage & Consistency Work                                                                       |
-|--------------------|-----------|------------------------------------------------------------------------------------------------|
->>>>>>> 508fad7 (Update README)
-| unmet_need         | INTEGER   | Always recoded to integer codes for analysis.                                                  |
-| employment_status  | INTEGER   | Integer codes (standardized mappings if categories changed).                                   |
-| age_group          | INTEGER   | Categorical bins, ensure integer representation.                                               |
-| sex                | INTEGER   | Categorical, integer assignment; newer years may use sex assigned at birth, map to same codes. |
-| race_ethnicity     | INTEGER   | Integer-based bins; if categories changed or expanded, recode to stable codes across years.    |
-| education_level    | INTEGER   | Integer codes for attainment or years. Recode if category bins shifted in newer years.         |
-| survey_date        | DATE      | ISO date format (YYYY-MM-DD) for robust Tableau processing.                                    |
-| person_weight      | NUMERIC   | Floating point or double precision is valid; use numeric for consistency.                      |
-| variance_stratum   | INTEGER   | Remains integer in all years, used for design analysis.                                        |
-<<<<<<< HEAD
-| variance_replicate | INTEGER   | Remains integer in all years, used for design analysis.
-
-
---Correct Data Types, namely DATE. 
--- Convert survey_date from text to DATE for 2019
-=======
-| variance_replicate | INTEGER   | Remains integer in all years, used for design analysis.                                        |
-
-\-- Correct Data Types, namely DATE.
-
-\-- Convert survey_date from text to DATE for 2019
-
-```SQL
->>>>>>> 508fad7 (Update README)
+#### Data Type Enforcement
+(Addressing Merge Conflicts in Data Types Table)
+
+| Column Name | Data Type | Usage & Consistency Work |
+| :--- | :--- | :--- |
+| unmet_need | INTEGER | Always recoded to integer codes for analysis. |
+| employment_status | INTEGER | Integer codes (standardized mappings if categories changed). |
+| age_group | INTEGER | Categorical bins, ensure integer representation. |
+| sex | INTEGER | Categorical, integer assignment; newer years may use sex assigned at birth, map to same codes. |
+| race_ethnicity | INTEGER | Integer-based bins; if categories changed or expanded, recode to stable codes across years. |
+| education_level | INTEGER | Integer codes for attainment or years. Recode if category bins shifted in newer years. |
+| survey_date | DATE | ISO date format (YYYY-MM-DD) for robust Tableau processing. |
+| person_weight | NUMERIC | Floating point or double precision is valid; use numeric for consistency. |
+| variance_stratum | INTEGER | Remains integer in all years, used for design analysis. |
+| variance_replicate | INTEGER | Remains integer in all years, used for design analysis. |
+
+*SQL for Data Type Conversion:*
+```sql
 ALTER TABLE nsduh_2019
     ALTER COLUMN survey_date TYPE date
     USING to_date(survey_date, 'MM/DD/YYYY');
+-- ... (Repeated for other years)
 
--- Convert survey_date from text to DATE for 2020
-ALTER TABLE nsduh_2020
-    ALTER COLUMN survey_date TYPE date
-    USING to_date(survey_date, 'MM/DD/YYYY');
-
--- Convert survey_date from text to DATE for 2021
-ALTER TABLE nsduh_2021
-    ALTER COLUMN survey_date TYPE date
-    USING to_date(survey_date, 'MM/DD/YYYY');
-
--- Convert survey_date from text to DATE for 2022
-ALTER TABLE nsduh_2022
-    ALTER COLUMN survey_date TYPE date
-    USING to_date(survey_date, 'MM/DD/YYYY');
-
--- Convert survey_date from text to DATE for 2023
-ALTER TABLE nsduh_2023
-    ALTER COLUMN survey_date TYPE date
-    USING to_date(survey_date, 'MM/DD/YYYY');
-
-<<<<<<< HEAD
-
---check, differences found in data types, new conversion necessary
-
-=======
--- check, differences found in data types, new conversion necessary
->>>>>>> 508fad7 (Update README)
-
--- Return column names and data types for nsduh_2019
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name = 'nsduh_2019';
-
--- Return column names and data types for nsduh_2020
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name = 'nsduh_2020';
-
--- Return column names and data types for nsduh_2021
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name = 'nsduh_2021';
-
--- Return column names and data types for nsduh_2022
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name = 'nsduh_2022';
-
--- Return column names and data types for nsduh_2023
-SELECT column_name, data_type
-FROM information_schema.columns
-WHERE table_schema = 'public'
-  AND table_name = 'nsduh_2023';
-
-<<<<<<< HEAD
---Enforce data types for analysis due to methodology changes in 2022, 2023. 
-ALTER TABLE nsduh_2019
-    ALTER COLUMN unmet_need TYPE integer,
-    ALTER COLUMN employment_status TYPE integer,
-    ALTER COLUMN age_group TYPE integer,
-    ALTER COLUMN sex TYPE integer,
-    ALTER COLUMN race_ethnicity TYPE integer,
-    ALTER COLUMN education_level TYPE integer,
-    ALTER COLUMN survey_date TYPE date,
-    ALTER COLUMN person_weight TYPE numeric,
-    ALTER COLUMN variance_stratum TYPE integer,
-    ALTER COLUMN variance_replicate TYPE integer;
-
-ALTER TABLE nsduh_2020
-    ALTER COLUMN unmet_need TYPE integer,
-    ALTER COLUMN employment_status TYPE integer,
-    ALTER COLUMN age_group TYPE integer,
-    ALTER COLUMN sex TYPE integer,
-    ALTER COLUMN race_ethnicity TYPE integer,
-    ALTER COLUMN education_level TYPE integer,
-    ALTER COLUMN survey_date TYPE date,
-    ALTER COLUMN person_weight TYPE numeric,
-    ALTER COLUMN variance_stratum TYPE integer,
-    ALTER COLUMN variance_replicate TYPE integer;
-
-ALTER TABLE nsduh_2021
-    ALTER COLUMN unmet_need TYPE integer,
-    ALTER COLUMN employment_status TYPE integer,
-    ALTER COLUMN age_group TYPE integer,
-    ALTER COLUMN sex TYPE integer,
-    ALTER COLUMN race_ethnicity TYPE integer,
-    ALTER COLUMN education_level TYPE integer,
-    ALTER COLUMN survey_date TYPE date,
-    ALTER COLUMN person_weight TYPE numeric,
-    ALTER COLUMN variance_stratum TYPE integer,
-    ALTER COLUMN variance_replicate TYPE integer;
-
-                                        |
-**bin the age_group in Tableau for frequency distributions using calculated fields
-IF [AGE] >= 1 AND [AGE] <= 6 THEN "12-17"
-ELSEIF [AGE] >= 7 AND [AGE] <= 9 THEN "18-20"
-ELSEIF [AGE] >= 10 AND [AGE] <= 11 THEN "21-24"
-ELSEIF [AGE] >= 12 AND [AGE] <= 13 THEN "25-29"
-ELSEIF [AGE] >= 14 THEN "30+"
-ELSE "Unknown"
-END
-
-**bins didn't work out. we went with Tableau groups, which is much easier to set up and works very well. 
-
-### Recommendations for further action and study. 
-
-**-- Create clean binary variable for workplace assistance program access
-CASE 
-    WHEN wrkdrghlp = 1 THEN 1        -- Yes, EAP or counseling available
-    WHEN wrkdrghlp = 2 THEN 0        -- No, not offered
-    ELSE NULL                        -- All missing, skips, DK, refused, bad data
-END AS employer_assistance_program
-
-This aligns WRKDRGHLP with:
-
-unmet_need
-
-employment_status
-
-education_level
-
-race_ethnicity
-
-sex
-
-Now you can model things like:
-
-“Does access to an employer assistance program predict lower unmet need or higher employment?”
-
-**NOTE: Why access at work is not included in unmet need
-=======
 -- Enforce data types for analysis due to methodology changes in 2022, 2023.
 ALTER TABLE nsduh_2019
     ALTER COLUMN unmet_need         TYPE integer,
@@ -1056,155 +343,150 @@ ALTER TABLE nsduh_2019
     ALTER COLUMN person_weight      TYPE numeric,
     ALTER COLUMN variance_stratum   TYPE integer,
     ALTER COLUMN variance_replicate TYPE integer;
-
-ALTER TABLE nsduh_2020
-    ALTER COLUMN unmet_need         TYPE integer,
-    ALTER COLUMN employment_status  TYPE integer,
-    ALTER COLUMN age_group          TYPE integer,
-    ALTER COLUMN sex                TYPE integer,
-    ALTER COLUMN race_ethnicity     TYPE integer,
-    ALTER COLUMN education_level    TYPE integer,
-    ALTER COLUMN survey_date        TYPE date,
-    ALTER COLUMN person_weight      TYPE numeric,
-    ALTER COLUMN variance_stratum   TYPE integer,
-    ALTER COLUMN variance_replicate TYPE integer;
-
-ALTER TABLE nsduh_2021
-    ALTER COLUMN unmet_need         TYPE integer,
-    ALTER COLUMN employment_status  TYPE integer,
-    ALTER COLUMN age_group          TYPE integer,
-    ALTER COLUMN sex                TYPE integer,
-    ALTER COLUMN race_ethnicity     TYPE integer,
-    ALTER COLUMN education_level    TYPE integer,
-    ALTER COLUMN survey_date        TYPE date,
-    ALTER COLUMN person_weight      TYPE numeric,
-    ALTER COLUMN variance_stratum   TYPE integer,
-    ALTER COLUMN variance_replicate TYPE integer;
-
-                                    |
 ```
->>>>>>> 508fad7 (Update README)
 
-Unmet need in NSDUH is defined strictly as:
+#### Import Verification
+```sql
+SELECT table_name, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema='public'
+AND table_name IN ('nsduh_2019', 'nsduh_2020', 'nsduh_2021', 'nsduh_2022', 'nsduh_2023', 'teds_a_2019', 'teds_a_2020', 'teds_a_2021', 'teds_a_2022', 'teds_a_2023')
+ORDER BY table_name, ordinal_position;
+```
 
-The respondent needed mental health treatment in the past 12 months but did not get it.
+---
 
-This is calculated from treatment-need questions and service-use questions only.
+## Analysis & Findings
 
-The formula does not use:
+### Key Findings 2019_nsduh
 
-whether the workplace offered assistance
+#### Exploratory Data Analysis
+Summary statistics were gathered on a subset of self-reported unmet need by age, race, sex, education level.
 
-whether the respondent knew about the assistance
+### Frequencies, Counts and Percent of Total
+**Define the populations:**
+*   Overall sample (all ages, full NSDUH 2019 analytic set)
+    <img src="media/91b4acff0e95e80ddc586a5d2fa2f190.png" width="100%" />
+    <img src="media/526f22d3206602dc505d1f0cc1e8c85b.png" width="100%" />
 
-insurance access
+### Demographics
 
-ability to pay
+**Age-groups (excludes under 18):**
+<img src="media/adfb68d742f2c0b90ca898e7231b1d16.png" width="100%" />
 
-stigma
+**Focus age group:**
+<img src="media/9682edf87f707db6bacd100eb1307408.png" width="100%" />
+Because 18–25-year-olds account for the largest share of unmet-need cases in the full sample, all subsequent subgroup analyses focus on respondents aged 18–25 with unmet need.
+*<img src="media/422fad76d7698b26da8c9747ffb6e23e.png" width="100%" />*
 
-employer support
+**Sex:**
+<img src="media/ffa3c1e969ff0bfdf80bf6813fc0ca66.png" width="100%" />
+Within 18-25 with unmet need, females dominate males in terms of reporting unmet mental health need. However, this finding is misleading. As shown below, a higher *within-group %* for females can coexist with males showing the strongest relationship in a chi-square output, because chi-square is driven by **how far each cell is from its expected count**, not by which group has the bigger row percentage.
 
-workplace benefits
+**Race/Ethnicity:**
+<img src="media/7412b8e03e79fc8f986e116a9d8c06c2.png" width="100%" />
+Within 18-25 with unmet need, whites dominate other races in terms of reporting unmet mental health need.
 
-EAP availability
+**Education level:**
+<img src="media/97b981dfbaf89552660e2ef09a420f40.png" width="100%" />
+Within 18-25 with unmet need, college graduates dominate lower education levels in terms of reporting unmet mental health need.
 
-workplace culture variables
+### Employment Status
+Within 18-25 with unmet need, employed (full time or part time) dominates unemployed in terms of reporting unmet mental health need.
 
-None of these are included in the unmet_need variable.
+<img src="media/ba6fe9b1cb34fa3bb79089b93609d65a.png" width="100%" />
+*Among 18–25-year-olds with unmet need, white females account for the largest share of unmet-need cases.*
 
-This is true even in weighted survey analyses.
+### Interpretation of Preliminary Findings
 
-✔ Why unmet need CANNOT include workplace access
+**1. The Hidden Story / Connection to Chi-Square**
+A higher *within-group %* for females can coexist with males showing the “strongest relationship” in a chi-square output, because chi-square is driven by **how far each cell is from its expected count**, not by which group has the bigger row percentage.
 
-<<<<<<< HEAD
-Because access is only one potential barrier among many.
-Unmet need is a self-reported mental health outcome, not an environmental variable.
+The demographic burden charts for 18–25 with unmet need are the descriptive slice of those tables, restricted to the “Unmet need = Yes” column and normalized by $$N_{\text{unmet} , 18 \text{–} 25}$$.
 
-Unmet need =
+*   Steps 1–2 justify focusing on age 18–25.
+*   Step 3 defines the analytic population going forward: age 18–25 with unmet need.
+*   Steps 4–6 identify, for each demographic, who dominates the unmet-need burden inside that population.
+*   The chi-square results then test whether unmet need is statistically associated with those demographic variables across 18–25-year-olds.
 
-Did you feel you needed treatment?
-=======
+**2. Modeling Challenges**
+The first attempted logistic regression failed because both predictors—unmet need and employment status—were coded as categorical integers with no underlying continuous scale. Treating category labels as numeric produced an artificial Pearson correlation of **0.13**, a *meaningless* value.
+
+Phase Three will fix this by using a **multinomial logistic regression** with unmet need as the categorical outcome variable and employment status, age group, sex, race, ethnicity, and education as categorical predictors.
+
+**3. Contingency Table Analysis**
+| | Full-time | Part-time | Unemployed |
+| :--- | :--- | :--- | :--- |
+| No Unmet Need | 9050 | 3467 | 969 |
+| Unmet Need | 1402 | 691 | 201 |
+
+*Interpretation:*
+• When people do not have unmet need, most are in full-time work.
+• When people do have unmet need, the rate of unemployment and part-time work increases relative to their group size.
+
+**4. Percent-of-row vs percent-of-column confusion**
+*   **Percent of Total:** Expresses each cell as a percent of *all people combined*. Dilutes the signal because full-time workers dominate.
+*   **Percent of Row:** Expresses percentages *within unmet-need groups*. This is the correct view.
+
+Using row percentages:
+*   **No Unmet Need**: Full-time ~67%
+*   **Unmet Need**: Full-time ~61%
+*   **Pattern**: As unmet need appears, **full-time drops**, **part-time rises**, **unemployment rises**.
+
+**5. Chi-square meaning in our context**
+The chi-square test checks whether the distribution across employment categories is statistically different between unmet-need groups.
+Therefore: **Reject the null hypothesis.** Employment status is not independent of unmet mental-health need.
+
+**6. Conclusion**
+Our Tableau results show a **statistically significant and practically meaningful association** between unmet mental-health need and worse employment outcomes, supporting our hypothesis that mental-health status relates to productivity measures.
+
+---
+
+## Discussion & Recommendations
+
+### Recommendations for further action and study.
+
+**-- Create clean binary variable for workplace assistance program access**
+```sql
+CASE
+    WHEN wrkdrghlp = 1 THEN 1        -- Yes, EAP or counseling available
+    WHEN wrkdrghlp = 2 THEN 0        -- No, not offered
+    ELSE NULL                        -- All missing, skips, DK, refused, bad data
+END AS employer_assistance_program
+```
+
+This aligns `WRKDRGHLP` with `unmet_need`, `employment_status`, etc.
+Now you can model things like: “Does access to an employer assistance program predict lower unmet need or higher employment?”
+
+### Note: Why access at work is NOT included in unmet need
+
+Unmet need in NSDUH is defined strictly as: "**The respondent needed mental health treatment in the past 12 months but did not get it.**"
+
+This is calculated from treatment-need questions and service-use questions only. The formula does **not** use:
+*   whether the workplace offered assistance
+*   whether the respondent knew about the assistance
+*   insurance access
+*   ability to pay
+*   stigma
+*   employer support / benefits / EAP availability
+
+**Why unmet need CANNOT include workplace access:**
 Because access is only one potential barrier among many. Unmet need is a self-reported mental health outcome, not an environmental variable.
 
-Unmet need =
+Follow-up reasons for not receiving treatment include:
+*   didn’t think treatment would help
+*   cost
+*   didn’t know where to go
+*   couldn’t get an appointment
+*   transportation barriers
+*   fear, stigma, privacy concerns
+*   time constraints
+*   didn’t want records
 
-Did you feel your needed treatment?
->>>>>>> 508fad7 (Update README)
-
-Did you receive treatment?
-
-If not, why not?
-
-Those follow-up reasons include:
-
-didn’t think treatment would help
-
-cost
-
-didn’t know where to go
-
-couldn’t get an appointment
-
-transportation barriers
-
-fear, stigma, privacy concerns
-
-time constraints
-
-didn’t want records
-
-But they do not include:
-
-<<<<<<< HEAD
-“Does your employer offer an EAP?”
-=======
-“Does our employer offer an EAP?”
->>>>>>> 508fad7 (Update README)
-
+But they do **not** include: “Does your employer offer an EAP?”
 Because NSDUH does not tie unmet need to employer benefits in its scoring or weighting.
 
-✔ Why access-at-work is NOT a weighted contributor
-
-NSDUH weights are designed to represent national population counts, not to mathematically connect workplace variables to mental-health measures.
-
-Weighted analysis only adjusts for:
-
-sampling design
-
-demographic representativeness
-
-replicate weights for variance estimation
-
-Weighting does not mix variables together or combine constructs.
-
-<<<<<<< HEAD
-✔ Summary
-
-Unmet need is a mental-health outcome.
-Workplace access is an environmental exposure.
-They are not combined, not weighted together, and never influence each other inside NSDUH’s scoring.
-For this reason, workplace access is not already included in unmet need, even in weighted form.
-
-
-**the largest cell in the entire dataset will always be:
-
-Employed full-time + Yes unmet need
-not because unmet need causes employment,
-but because that’s where the population is.
-
-It’s simply the biggest segment of the dataset.
-
-=======
-✔ Summary (clean)
-
+**Summary:**
 Unmet need is a mental-health outcome. Workplace access is an environmental exposure. They are not combined, not weighted together, and never influence each other inside NSDUH’s scoring. For this reason, workplace access is not already included in unmet need, even in weighted form.
 
-\*\*the largest cell in the entire dataset will always be:
-
-Employed full-time + Yes unmet need
-
-not because unmet need causes employment, but because that’s where the population is.
-
-It’s simply the biggest segment of the dataset.
-508fad7 (Update README)
+---
