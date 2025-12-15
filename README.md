@@ -13,7 +13,7 @@
 
 ## Executive Summary
 
-> **Key Insight:** Analysis of NSDUH data reveals a statistically significant correlation between unmet mental health needs and workforce detachment. Identifying and treating these unmet needs presents a measurable opportunity for improving workforce retention and economic productivity.
+> **Key Insight:** Analysis of NSDUH data reveals a statistically significant relationship between unmet mental health needs and workforce detachment. Identifying and treating these unmet needs presents a measurable opportunity for improving workforce retention and economic productivity.
 
 **TL;DR:**
 *   **Goal:** Determine if untreated mental health issues predict unemployment.
@@ -114,7 +114,7 @@ Adults reporting unmet need for mental health treatment have higher odds of bein
 
 ### Formal Hypothesis
 
-Adults who report an unmet need for mental health treatment are more likely to be unemployed. being unemployed or out of the labor force than adults without unmet need, controlling for age, sex, race/ethnicity, and education.
+Adults who report an unmet need for mental health treatment are more likely to be unemployed or out of the labor force than adults without unmet need, controlling for age, sex, race/ethnicity, and education.
 
 *Primary Hypothesis (NSDUH only):* Unmet need Access, or unmet need for mental health services predicts employment status. We ask if lack of access to mental health care affects one’s ability to maintain employment, and what groups show the highest unmet need.
 
@@ -148,13 +148,13 @@ This rigorous definition ensures that when we measure "unmet need," we are captu
 
 ### Project Structure
 
-| **Stage** | **Objective** | **Output** |
-| :--- | :--- | :--- |
-| Ask / Plan | Define hypotheses, outcomes, covariates | Operational definitions |
-| Prepare | Import, rename, validate datasets, address schema drift, variable consistency, null values, data types. | Clean PostgreSQL tables |
-| Process / Analyze | NSDUH, Phase 1, TEDS-A, Phase 2-3<br>Frequency and Distribution, Descriptive Statistica, Chi-Square, Phase 3 Logistic regressions | Adjusted odds ratios |
-| Construct / Share | Export CSVs to Tableau | Dashboards and reports |
-| Execute / Act | Present findings | Executive brief, Full PDF publication and a short video presentation |
+| **Stage**         | **Objective**                                                                                                                     | **Output**                                                           |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| Ask / Plan        | Define hypotheses, outcomes, covariates                                                                                           | Operational definitions                                              |
+| Prepare           | Import, rename, validate datasets, address schema drift, variable consistency, null values, data types.                           | Clean PostgreSQL tables                                              |
+| Process / Analyze | NSDUH, Phase 1, TEDS-A, Phase 2-3<br>Frequency and Distribution, Descriptive Statistica, Chi-Square, Phase 3 Logistic regressions | Adjusted odds ratios                                                 |
+| Construct / Share | Export CSVs to Tableau                                                                                                            | Dashboards and reports                                               |
+| Execute / Act     | Present findings                                                                                                                  | Executive brief, Full PDF publication and a short video presentation |
 
 ### Phase 1 – NSDUH 2019 (current stage)
 
@@ -208,12 +208,12 @@ SELECT * FROM table_name LIMIT 10;
 **Exact headers used by year:**
 
 | Year | Age field | Weight field | Stratum field | Replicate field |
-| :--- | :--- | :--- | :--- | :--- |
-| 2019 | AGE2 | ANALWT_C | VESTR | VEREP |
-| 2020 | AGE2 | ANALWT_C | VESTR | VEREP |
-| 2021 | CATAGE | ANALWT_C | VESTR | VEREP |
-| 2022 | CATAGE | ANALWT_C | VESTR | VEREP |
-| 2023 | CATAGE | ANALWT_C | VESTR | VEREP |
+| :--- | :-------- | :----------- | :------------ | :-------------- |
+| 2019 | AGE2      | ANALWT_C     | VESTR         | VEREP           |
+| 2020 | AGE2      | ANALWT_C     | VESTR         | VEREP           |
+| 2021 | CATAGE    | ANALWT_C     | VESTR         | VEREP           |
+| 2022 | CATAGE    | ANALWT_C     | VESTR         | VEREP           |
+| 2023 | CATAGE    | ANALWT_C     | VESTR         | VEREP           |
 
 **Header normalization and readable renames (applied after import):**
 
@@ -232,34 +232,34 @@ SELECT * FROM table_name LIMIT 10;
 
 #### Recoding Variables for Clarity
 
-| Original | Renamed | Description |
-| :--- | :--- | :--- |
-| AMHTXND2 | unmet_need | Unmet need for mental health treatment (past 12 months) |
-| IRWRKSTAT | employment_status | Employment status (employed / unemployed / not in labor force) |
-| AGE2 / CATAGE | age_group | Age category (normalized across years) |
-| IRSEX | sex | Sex |
-| NEWRACE2 | race_ethnicity | Race/ethnicity (combined) |
-| IREDUHIGHST2 | education_level | Highest education level |
-| FILEDATE | survey_date | Record/survey date |
-| ANALWT_C | person_weight | Person-level survey weight |
-| VESTR | variance_stratum | Variance estimation stratum |
-| VEREP | variance_replicate | Variance replicate |
+| Original      | Renamed            | Description                                                    |
+| :------------ | :----------------- | :------------------------------------------------------------- |
+| AMHTXND2      | unmet_need         | Unmet need for mental health treatment (past 12 months)        |
+| IRWRKSTAT     | employment_status  | Employment status (employed / unemployed / not in labor force) |
+| AGE2 / CATAGE | age_group          | Age category (normalized across years)                         |
+| IRSEX         | sex                | Sex                                                            |
+| NEWRACE2      | race_ethnicity     | Race/ethnicity (combined)                                      |
+| IREDUHIGHST2  | education_level    | Highest education level                                        |
+| FILEDATE      | survey_date        | Record/survey date                                             |
+| ANALWT_C      | person_weight      | Person-level survey weight                                     |
+| VESTR         | variance_stratum   | Variance estimation stratum                                    |
+| VEREP         | variance_replicate | Variance replicate                                             |
 
 *TEDS-A (2019–2022)*
-| Original | Renamed | Description |
-| :--- | :--- | :--- |
-| ADM_YR | admission_year | Admission year |
-| CASEID | case_id | Admission identifier |
-| STFIPS | state_fips | State FIPS |
-| EMPLOY | employment_status | Employment status at admission |
-| PSYPROB | mental_health_problem | Co-occurring mental health problem |
-| AGE | age_group | Age group at admission |
-| SEX | sex | Sex |
-| RACE | race | Race |
-| ETHNIC | ethnicity | Ethnicity (Hispanic origin) |
-| EDUC | education_level | Highest education attained |
-| DIVISION | census_division | U.S. Census division |
-| REGION | census_region | U.S. Census region |
+| Original | Renamed               | Description                        |
+| :------- | :-------------------- | :--------------------------------- |
+| ADM_YR   | admission_year        | Admission year                     |
+| CASEID   | case_id               | Admission identifier               |
+| STFIPS   | state_fips            | State FIPS                         |
+| EMPLOY   | employment_status     | Employment status at admission     |
+| PSYPROB  | mental_health_problem | Co-occurring mental health problem |
+| AGE      | age_group             | Age group at admission             |
+| SEX      | sex                   | Sex                                |
+| RACE     | race                  | Race                               |
+| ETHNIC   | ethnicity             | Ethnicity (Hispanic origin)        |
+| EDUC     | education_level       | Highest education attained         |
+| DIVISION | census_division       | U.S. Census division               |
+| REGION   | census_region         | U.S. Census region                 |
 
 #### SQL Examples (Data Refinement)
 
@@ -315,18 +315,18 @@ FROM nsduh_2022_raw;
 #### Data Type Enforcement
 (Addressing Merge Conflicts in Data Types Table)
 
-| Column Name | Data Type | Usage & Consistency Work |
-| :--- | :--- | :--- |
-| unmet_need | INTEGER | Always recoded to integer codes for analysis. |
-| employment_status | INTEGER | Integer codes (standardized mappings if categories changed). |
-| age_group | INTEGER | Categorical bins, ensure integer representation. |
-| sex | INTEGER | Categorical, integer assignment; newer years may use sex assigned at birth, map to same codes. |
-| race_ethnicity | INTEGER | Integer-based bins; if categories changed or expanded, recode to stable codes across years. |
-| education_level | INTEGER | Integer codes for attainment or years. Recode if category bins shifted in newer years. |
-| survey_date | DATE | ISO date format (YYYY-MM-DD) for robust Tableau processing. |
-| person_weight | NUMERIC | Floating point or double precision is valid; use numeric for consistency. |
-| variance_stratum | INTEGER | Remains integer in all years, used for design analysis. |
-| variance_replicate | INTEGER | Remains integer in all years, used for design analysis. |
+| Column Name        | Data Type | Usage & Consistency Work                                                                       |
+| :----------------- | :-------- | :--------------------------------------------------------------------------------------------- |
+| unmet_need         | INTEGER   | Always recoded to integer codes for analysis.                                                  |
+| employment_status  | INTEGER   | Integer codes (standardized mappings if categories changed).                                   |
+| age_group          | INTEGER   | Categorical bins, ensure integer representation.                                               |
+| sex                | INTEGER   | Categorical, integer assignment; newer years may use sex assigned at birth, map to same codes. |
+| race_ethnicity     | INTEGER   | Integer-based bins; if categories changed or expanded, recode to stable codes across years.    |
+| education_level    | INTEGER   | Integer codes for attainment or years. Recode if category bins shifted in newer years.         |
+| survey_date        | DATE      | ISO date format (YYYY-MM-DD) for robust Tableau processing.                                    |
+| person_weight      | NUMERIC   | Floating point or double precision is valid; use numeric for consistency.                      |
+| variance_stratum   | INTEGER   | Remains integer in all years, used for design analysis.                                        |
+| variance_replicate | INTEGER   | Remains integer in all years, used for design analysis.                                        |
 
 *SQL for Data Type Conversion:*
 ```sql
@@ -441,15 +441,15 @@ The demographic burden charts for 18–25 with unmet need are the descriptive sl
 *   The chi-square results then test whether unmet need is statistically associated with those demographic variables across 18–25-year-olds.
 
 **2. Modeling Challenges**
-The first attempted logistic regression failed because both predictors—unmet need and employment status—were coded as categorical integers with no underlying continuous scale. Treating category labels as numeric produced an artificial Pearson correlation of **0.13**, a *meaningless* value.
+The first attempted logistic regression failed because both predictors—unmet need and employment status—were coded as categorical integers with no underlying continuous scale. Treating category labels as numeric produced an **artificial and meaningless metric** (a Pearson correlation of 0.13).
 
 Phase Three will fix this by using a **multinomial logistic regression** with unmet need as the categorical outcome variable and employment status, age group, sex, race, ethnicity, and education as categorical predictors.
 
 **3. Contingency Table Analysis**
-| | Full-time | Part-time | Unemployed |
-| :--- | :--- | :--- | :--- |
-| No Unmet Need | 9050 | 3467 | 969 |
-| Unmet Need | 1402 | 691 | 201 |
+|               | Full-time | Part-time | Unemployed |
+| :------------ | :-------- | :-------- | :--------- |
+| No Unmet Need | 9050      | 3467      | 969        |
+| Unmet Need    | 1402      | 691       | 201        |
 
 *Interpretation:*
 • When people do not have unmet need, most are in full-time work.
